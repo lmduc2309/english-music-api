@@ -1,90 +1,114 @@
 # 🎵 English Music API
 
-**Learn English by Singing Songs** — A Node.js backend that powers an interactive English learning experience through music.
+> Learn English by singing your favorite songs — Node.js Backend API
 
-## 🎯 Concept
-
-Users listen to English songs sentence-by-sentence, then sing/speak each sentence back. The system scores them on:
-- **Pitch Accuracy** — How well they match the musical notes
-- **Duration Accuracy** — Timing and rhythm of their delivery  
-- **Pronunciation Score** — Correctness of English pronunciation
-- **Overall Score** — Weighted combination of all three
-
-Users must score **≥80%** to advance to the next sentence. Songs are categorized by CEFR levels (A1→C2).
-
-## 🏗 Architecture
+## Architecture
 
 ```
 src/
-├── config/          # Database, auth, app config
-├── controllers/     # Route handlers
-├── middleware/      # Auth, error handling, validation
-├── models/          # MongoDB/Mongoose schemas
-├── routes/          # API route definitions
-├── services/        # Business logic & scoring engine
-├── utils/           # Helpers, constants
-├── seeds/           # Sample data seeder
-└── app.ts           # Express app entry
+├── app.ts                    # Express entry point
+├── config/
+│   ├── constants.ts          # CEFR levels, scoring weights, XP config
+│   └── database.ts           # MongoDB connection
+├── controllers/
+│   ├── auth.controller.ts    # Register, login, profile
+│   ├── song.controller.ts    # Songs, sentences, levels
+│   ├── practice.controller.ts # Submit attempts, scoring, history
+│   ├── progress.controller.ts # User progress tracking
+│   └── leaderboard.controller.ts # Rankings
+├── middleware/
+│   ├── auth.ts               # JWT authentication
+│   ├── errorHandler.ts       # Global error handler
+│   └── validate.ts           # Express-validator middleware
+├── models/
+│   ├── User.ts               # User profile + stats
+│   ├── Song.ts               # Song metadata + language info
+│   ├── Sentence.ts           # Lyrics with word-level timing + phonetics
+│   ├── PracticeAttempt.ts    # Scoring per attempt
+│   ├── SongProgress.ts       # Progress per song per user
+│   └── Achievement.ts        # Unlockable badges
+├── routes/
+│   ├── auth.routes.ts
+│   ├── song.routes.ts
+│   ├── practice.routes.ts
+│   ├── progress.routes.ts
+│   └── leaderboard.routes.ts
+├── services/
+│   ├── scoring.service.ts    # Pitch + duration + pronunciation scoring engine
+│   └── progress.service.ts   # XP, streaks, level-up logic
+└── seeds/
+    └── seeder.ts             # Sample songs A1–C2
 ```
 
-## 🚀 Quick Start
+## Core Features
+
+- **CEFR A1–C2 Leveled Songs** with word-level timing & phonetics
+- **3-Dimension Scoring**: pitch (25%), duration (25%), pronunciation (50%)
+- **80% Pass Threshold** — must pass to continue to next sentence
+- **Word-level feedback** — identifies exactly which words need practice
+- **XP + Streak System** with multipliers for consecutive practice
+- **Leaderboard** — global and per-level rankings
+- **Smart Feedback** — emoji-rich tips based on score breakdown
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/auth/register` | Create account |
+| POST | `/api/auth/login` | Login |
+| GET | `/api/auth/profile` | Get profile |
+| PATCH | `/api/auth/profile` | Update profile |
+| GET | `/api/songs?level=A1&genre=pop` | Browse songs |
+| GET | `/api/songs/levels` | Get level summary |
+| GET | `/api/songs/:id` | Song details |
+| GET | `/api/songs/:id/sentences` | Get all sentences |
+| POST | `/api/practice/attempt` | Submit singing attempt |
+| GET | `/api/practice/history` | Attempt history |
+| GET | `/api/practice/daily-stats` | Today's stats |
+| GET | `/api/progress` | Overall progress |
+| GET | `/api/progress/song/:songId` | Per-song progress |
+| GET | `/api/leaderboard` | Global leaderboard |
+| GET | `/api/leaderboard/level/:level` | Level leaderboard |
+| GET | `/api/leaderboard/me` | My rank |
+
+## Quick Start
 
 ```bash
+# Install
 npm install
+
+# Copy env
 cp .env.example .env
+
+# Seed database (sample songs A1-C2)
 npm run seed
+
+# Development
 npm run dev
+
+# Production
+npm run build && npm start
 ```
 
-## 📡 API Endpoints
+## Scoring System
 
-### Auth
-- `POST /api/auth/register` — Register new user
-- `POST /api/auth/login` — Login
-- `GET /api/auth/me` — Get current user
+The scoring engine analyzes three dimensions:
 
-### Songs  
-- `GET /api/songs` — List songs (filter by level, genre)
-- `GET /api/songs/:id` — Get song details with sentences
-- `GET /api/songs/levels/summary` — Songs count per CEFR level
+1. **Pitch (25%)** — Compares pitch contours using semitone distance with linear interpolation
+2. **Duration (25%)** — Timing accuracy with ±20% tolerance for full score
+3. **Pronunciation (50%)** — Word-by-word Levenshtein similarity scoring
 
-### Practice & Scoring
-- `POST /api/practice/score` — Submit attempt & get score
-- `GET /api/practice/history` — Practice history
-- `GET /api/practice/song/:songId/progress` — Song progress
+```
+Overall = (pitch × 0.25) + (duration × 0.25) + (pronunciation × 0.50)
+Pass threshold: 80%
+```
 
-### Progress & Achievements  
-- `GET /api/progress/dashboard` — User dashboard
-- `GET /api/achievements` — All achievements
-- `GET /api/leaderboard` — Global leaderboard
+## Docker
 
-## 🎮 Scoring System
+```bash
+docker-compose up -d
+```
 
-| Component | Weight | Description |
-|-----------|--------|-------------|
-| Pronunciation | 50% | Word-level accuracy via speech-to-text |
-| Pitch | 25% | Musical note matching |
-| Duration | 25% | Rhythm and timing |
+## Tech Stack
 
-**Pass Threshold:** 80% overall score to advance.
-
-## 🏆 CEFR Levels
-
-| Level | Description | Song Examples |
-|-------|-------------|---------------|
-| A1 | Beginner | Simple children's songs, slow ballads |
-| A2 | Elementary | Pop songs with clear pronunciation |
-| B1 | Intermediate | Standard pop/rock songs |
-| B2 | Upper Intermediate | Songs with idioms, phrasal verbs |
-| C1 | Advanced | Fast-paced songs, complex lyrics |
-| C2 | Mastery | Rap, songs with slang & cultural refs |
-
-## 🛠 Tech Stack
-
-- **Runtime:** Node.js + TypeScript  
-- **Framework:** Express.js
-- **Database:** MongoDB + Mongoose
-- **Auth:** JWT + bcrypt
-
-## 📄 License
-MIT
+Express.js + TypeScript + MongoDB + Mongoose + JWT + bcrypt
