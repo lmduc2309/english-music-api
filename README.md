@@ -1,114 +1,80 @@
-# 🎵 English Music API
+# English Music API
 
-> Learn English by singing your favorite songs — Node.js Backend API
-
-## Architecture
-
-```
-src/
-├── app.ts                    # Express entry point
-├── config/
-│   ├── constants.ts          # CEFR levels, scoring weights, XP config
-│   └── database.ts           # MongoDB connection
-├── controllers/
-│   ├── auth.controller.ts    # Register, login, profile
-│   ├── song.controller.ts    # Songs, sentences, levels
-│   ├── practice.controller.ts # Submit attempts, scoring, history
-│   ├── progress.controller.ts # User progress tracking
-│   └── leaderboard.controller.ts # Rankings
-├── middleware/
-│   ├── auth.ts               # JWT authentication
-│   ├── errorHandler.ts       # Global error handler
-│   └── validate.ts           # Express-validator middleware
-├── models/
-│   ├── User.ts               # User profile + stats
-│   ├── Song.ts               # Song metadata + language info
-│   ├── Sentence.ts           # Lyrics with word-level timing + phonetics
-│   ├── PracticeAttempt.ts    # Scoring per attempt
-│   ├── SongProgress.ts       # Progress per song per user
-│   └── Achievement.ts        # Unlockable badges
-├── routes/
-│   ├── auth.routes.ts
-│   ├── song.routes.ts
-│   ├── practice.routes.ts
-│   ├── progress.routes.ts
-│   └── leaderboard.routes.ts
-├── services/
-│   ├── scoring.service.ts    # Pitch + duration + pronunciation scoring engine
-│   └── progress.service.ts   # XP, streaks, level-up logic
-└── seeds/
-    └── seeder.ts             # Sample songs A1–C2
-```
-
-## Core Features
-
-- **CEFR A1–C2 Leveled Songs** with word-level timing & phonetics
-- **3-Dimension Scoring**: pitch (25%), duration (25%), pronunciation (50%)
-- **80% Pass Threshold** — must pass to continue to next sentence
-- **Word-level feedback** — identifies exactly which words need practice
-- **XP + Streak System** with multipliers for consecutive practice
-- **Leaderboard** — global and per-level rankings
-- **Smart Feedback** — emoji-rich tips based on score breakdown
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/api/auth/register` | Create account |
-| POST | `/api/auth/login` | Login |
-| GET | `/api/auth/profile` | Get profile |
-| PATCH | `/api/auth/profile` | Update profile |
-| GET | `/api/songs?level=A1&genre=pop` | Browse songs |
-| GET | `/api/songs/levels` | Get level summary |
-| GET | `/api/songs/:id` | Song details |
-| GET | `/api/songs/:id/sentences` | Get all sentences |
-| POST | `/api/practice/attempt` | Submit singing attempt |
-| GET | `/api/practice/history` | Attempt history |
-| GET | `/api/practice/daily-stats` | Today's stats |
-| GET | `/api/progress` | Overall progress |
-| GET | `/api/progress/song/:songId` | Per-song progress |
-| GET | `/api/leaderboard` | Global leaderboard |
-| GET | `/api/leaderboard/level/:level` | Level leaderboard |
-| GET | `/api/leaderboard/me` | My rank |
-
-## Quick Start
-
-```bash
-# Install
-npm install
-
-# Copy env
-cp .env.example .env
-
-# Seed database (sample songs A1-C2)
-npm run seed
-
-# Development
-npm run dev
-
-# Production
-npm run build && npm start
-```
-
-## Scoring System
-
-The scoring engine analyzes three dimensions:
-
-1. **Pitch (25%)** — Compares pitch contours using semitone distance with linear interpolation
-2. **Duration (25%)** — Timing accuracy with ±20% tolerance for full score
-3. **Pronunciation (50%)** — Word-by-word Levenshtein similarity scoring
-
-```
-Overall = (pitch × 0.25) + (duration × 0.25) + (pronunciation × 0.50)
-Pass threshold: 80%
-```
-
-## Docker
-
-```bash
-docker-compose up -d
-```
+NestJS backend for the English Music Learning App — learn English by singing songs!
 
 ## Tech Stack
 
-Express.js + TypeScript + MongoDB + Mongoose + JWT + bcrypt
+- **Framework:** NestJS v10
+- **Database:** MongoDB (Mongoose)
+- **Auth:** JWT + Passport
+- **Validation:** class-validator / class-transformer
+
+## Project Structure
+
+```
+src/
+  main.ts                   # App bootstrap
+  app.module.ts             # Root module
+  common/
+    constants.ts            # CEFR levels, scoring config
+    guards/                 # JwtAuthGuard
+    decorators/             # @UserId, @CurrentUser
+    filters/                # HttpExceptionFilter
+  modules/
+    auth/                   # Register, login, JWT strategy
+    users/                  # Profile, stats, change password
+    songs/                  # Song list, sentences, levels
+    practice/               # Submit attempts, scoring, history
+    progress/               # User & song progress tracking
+    leaderboard/            # Global & level leaderboards
+    achievements/           # Achievement unlock system
+  services/
+    scoring.service.ts      # Pitch, duration, pronunciation scoring
+    progress-helper.service # Streak, level-up, XP helpers
+  models/                   # Mongoose schemas
+  seeds/                    # DB seed data
+```
+
+## API Endpoints
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| POST | /api/auth/register | - | Register |
+| POST | /api/auth/login | - | Login |
+| GET | /api/auth/profile | JWT | My profile |
+| GET | /api/users/profile | JWT | Profile |
+| PUT | /api/users/profile | JWT | Update profile |
+| PUT | /api/users/change-password | JWT | Change password |
+| GET | /api/users/stats | JWT | User stats |
+| GET | /api/songs | JWT | List songs |
+| GET | /api/songs/levels | JWT | CEFR levels |
+| GET | /api/songs/:id | JWT | Song detail |
+| GET | /api/songs/:id/sentences | JWT | Song sentences |
+| POST | /api/practice/attempt | JWT | Submit singing attempt |
+| GET | /api/practice/history | JWT | Attempt history |
+| GET | /api/practice/daily-stats | JWT | Today's stats |
+| GET | /api/progress | JWT | Overall progress |
+| GET | /api/progress/songs/:id | JWT | Song progress |
+| GET | /api/leaderboard | JWT | Global leaderboard |
+| GET | /api/leaderboard/me | JWT | My rank |
+| GET | /api/leaderboard/level/:lvl | JWT | Level leaderboard |
+| GET | /api/achievements | JWT | All achievements |
+| GET | /api/achievements/mine | JWT | My achievements |
+| POST | /api/achievements/check | JWT | Check & award new |
+
+## Setup
+
+```bash
+npm install
+cp .env.example .env   # fill in MONGODB_URI, JWT_SECRET
+npm run dev
+```
+
+## Environment Variables
+
+```
+MONGODB_URI=mongodb://localhost:27017/english_music
+JWT_SECRET=your_secret
+JWT_EXPIRES_IN=30d
+PORT=3000
+```
