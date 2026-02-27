@@ -11,6 +11,8 @@ import songRoutes from './routes/song.routes';
 import practiceRoutes from './routes/practice.routes';
 import progressRoutes from './routes/progress.routes';
 import leaderboardRoutes from './routes/leaderboard.routes';
+import userRoutes from './routes/user.routes';
+import achievementRoutes from './routes/achievement.routes';
 
 dotenv.config();
 
@@ -37,6 +39,8 @@ app.use('/api/songs', songRoutes);
 app.use('/api/practice', practiceRoutes);
 app.use('/api/progress', progressRoutes);
 app.use('/api/leaderboard', leaderboardRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/achievements', achievementRoutes);
 
 // Error handling
 app.use(errorHandler);
