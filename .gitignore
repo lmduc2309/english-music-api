@@ -1,0 +1,8 @@
+/dist
+/node_modules
+/.env
+/.env.local
+.DS_Store
+*.js.map
+*.d.ts
+!jest.config.js
